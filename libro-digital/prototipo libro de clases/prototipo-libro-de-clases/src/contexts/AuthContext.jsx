@@ -1,56 +1,61 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
-import { loginRequest } from '../api/authApi.js';
 
 const AuthContext = createContext();
-const STORAGE_USER_KEY = 'schoolbook_user';
-const STORAGE_TOKEN_KEY = 'schoolbook_token';
 
-function normalizeRole(role) { return (role || '').toLowerCase(); }
-function getRouteByRole(role) {
-  switch (normalizeRole(role)) {
-    case 'admin': return '/admin';
-    case 'profesor': return '/profesor';
-    case 'alumno': return '/alumno';
-    case 'apoderado': return '/apoderado';
-    default: return '/';
-  }
+function getRouteByRole(rol) {
+  const role = (rol || '').toLowerCase();
+  if (role === 'admin') return '/admin';
+  if (role === 'profesor') return '/profesor';
+  if (role === 'alumno') return '/alumno';
+  if (role === 'apoderado') return '/apoderado';
+  return '/';
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_USER_KEY);
-    return stored ? JSON.parse(stored) : null;
-  });
-  const [loading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const persistUser = (nextUser) => {
-    setUser(nextUser);
-    if (nextUser) {
-      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(nextUser));
-      localStorage.setItem(STORAGE_TOKEN_KEY, nextUser.token);
-    } else {
-      localStorage.removeItem(STORAGE_USER_KEY);
-      localStorage.removeItem(STORAGE_TOKEN_KEY);
-    }
-  };
-
-  const login = async (email, password) => {
+  const login = async (email, password, rolEsperado) => {
+    setLoading(true);
+    
     try {
-      const data = await loginRequest(email.trim().toLowerCase(), password);
-      const loggedUser = { ...data, rol: normalizeRole(data.rol) };
-      persistUser(loggedUser);
-      return { success: true, user: loggedUser, redirectTo: getRouteByRole(loggedUser.rol) };
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, rol: rolEsperado })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setUser(data.user);
+        return { 
+          success: true, 
+          user: data.user, 
+          redirectTo: getRouteByRole(data.user.rol) 
+        };
+      }
+      
+      return { success: false, error: data.error || 'Credenciales inválidas' };
     } catch (error) {
-      return { success: false, error: error.message || 'Credenciales inválidas.' };
+      console.error('Error en login:', error);
+      return { success: false, error: 'Error de conexión con el servidor' };
+    } finally {
+      setLoading(false);
     }
   };
 
-  const logout = () => persistUser(null);
-  const isAuthenticated = () => !!user && !!localStorage.getItem(STORAGE_TOKEN_KEY);
-  const isAdmin = () => normalizeRole(user?.rol) === 'admin';
+  const logout = () => {
+    setUser(null);
+  };
 
-  const value = useMemo(() => ({ user, loading, login, logout, isAuthenticated, isAdmin, getRouteByRole }), [user, loading]);
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading]);
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export const useAuth = () => {
