@@ -16,6 +16,7 @@ export default function Login() {
     setError('');
 
     const result = await login(email, password);
+
     setLoading(false);
 
     if (result.success) {
@@ -31,6 +32,7 @@ export default function Login() {
       <div className="auth-card">
         <div className="auth-form-side">
           <h2>Inicio de sesión</h2>
+
           <form onSubmit={onSubmit} className="auth-form">
             <div className="form-group-custom">
               <label htmlFor="email">Correo</label>
@@ -40,8 +42,10 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="usuario@colegio.cl"
+                autoComplete="username"
               />
             </div>
+
             <div className="form-group-custom">
               <label htmlFor="password">Contraseña</label>
               <input
@@ -50,18 +54,24 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Contraseña"
+                autoComplete="current-password"
               />
             </div>
+
             {error && <div className="form-error">{error}</div>}
+
             <button type="submit" className="btn-base btn-primary btn-full" disabled={loading}>
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>
           </form>
         </div>
+
         <div className="auth-info-side">
           <div className="auth-info-content">
             <h3>Libro de clases digital</h3>
-            <p>Acceso a información académica.</p>
+            <p>
+              Acceso a informacion academica.
+            </p>
           </div>
         </div>
       </div>
