@@ -1,51 +1,80 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import { loginRequest } from '../api/authApi.js';
 
 const AuthContext = createContext();
 
 function getRouteByRole(rol) {
   const role = (rol || '').toLowerCase();
+
   if (role === 'admin') return '/admin';
   if (role === 'profesor') return '/profesor';
   if (role === 'alumno') return '/alumno';
   if (role === 'apoderado') return '/apoderado';
+
   return '/';
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('schoolbook_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('schoolbook_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
 
   const login = async (email, password, rolEsperado) => {
     setLoading(true);
-    
+
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, rol: rolEsperado })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
-        setUser(data.user);
-        return { 
-          success: true, 
-          user: data.user, 
-          redirectTo: getRouteByRole(data.user.rol) 
+      const data = await loginRequest(email, password);
+
+      const userData = {
+        id: data.id,
+        nombre: data.nombre,
+        email: data.email,
+        rol: data.rol,
+        token: data.token
+      };
+
+      if (rolEsperado && data.rol?.toLowerCase() !== rolEsperado.toLowerCase()) {
+        return {
+          success: false,
+          error: `Este usuario no corresponde al rol seleccionado: ${rolEsperado}`
         };
       }
-      
-      return { success: false, error: data.error || 'Credenciales inválidas' };
+
+      localStorage.setItem('schoolbook_token', data.token);
+      localStorage.setItem('schoolbook_user', JSON.stringify(userData));
+
+      setUser(userData);
+
+      return {
+        success: true,
+        user: userData,
+        redirectTo: getRouteByRole(userData.rol)
+      };
     } catch (error) {
       console.error('Error en login:', error);
-      return { success: false, error: 'Error de conexión con el servidor' };
+
+      return {
+        success: false,
+        error: error.message || 'Error de conexiÃ³n con el servidor'
+      };
     } finally {
       setLoading(false);
     }
   };
 
   const logout = () => {
+    localStorage.removeItem('schoolbook_token');
+    localStorage.removeItem('schoolbook_user');
     setUser(null);
   };
 
@@ -60,6 +89,10 @@ export function AuthProvider({ children }) {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth debe usarse dentro de AuthProvider');
+
+  if (!context) {
+    throw new Error('useAuth debe usarse dentro de AuthProvider');
+  }
+
   return context;
 };
