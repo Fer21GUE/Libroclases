@@ -1,0 +1,16 @@
+old_version/
+node_modules/
+.env
+TESTING_README.md
+USUARIOS_SISTEMA.md
+PROYECTO_COMPLETADO.md
+coverage/
+README_TECNICO.md
+*.zip
+
+node_modules/
+dist/
+.env
+*.log
+*.zip
+*.rar
