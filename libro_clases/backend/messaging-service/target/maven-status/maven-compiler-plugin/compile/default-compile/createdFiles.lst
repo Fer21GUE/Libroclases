@@ -1,0 +1,7 @@
+cl\colegio\messaging_service\repository\MensajeriaRepository.class
+cl\colegio\messaging_service\MessagingServiceApplication.class
+cl\colegio\messaging_service\dto\ResponderMensajeRequest.class
+cl\colegio\messaging_service\config\CorsConfig.class
+cl\colegio\messaging_service\service\MensajeriaService.class
+cl\colegio\messaging_service\controller\MensajeriaController.class
+cl\colegio\messaging_service\dto\CrearConversacionRequest.class

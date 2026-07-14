@@ -66,15 +66,16 @@ bff: 8084
 attendance-service: 8085
 api-gateway: 8080
 frontend: 5173
+messaging-service: 8086
 ```
 
 ## Usuarios
 
 ```
-admin@colegio.cl / Admin123
-profesor@colegio.cl / Profesor123
-profesor2@colegio.cl / Profesor123
-alumno@colegio.cl / Alumno123
-alumno2@colegio.cl / Alumno123
-apoderado@colegio.cl / Apoderado123
-```
+admin@colegio.cl / Admin123 / Administrador
+mesotop@colegio.cl / S12345678-5 / Profesor 1
+caperezs@colegio.cl / P11111111-1 / Profesor 2
+mirojasd@colegio.cl / R22222222-2 / Alumno 1
+vpfloress@colegio.cl / F33333333-3 / Alumno 2
+pegonzalezr@colegio.cl / G44444444-4 / Apoderado 1
+

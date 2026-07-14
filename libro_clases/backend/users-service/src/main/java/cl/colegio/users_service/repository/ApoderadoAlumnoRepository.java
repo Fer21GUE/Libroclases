@@ -5,6 +5,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ApoderadoAlumnoRepository extends JpaRepository<ApoderadoAlumno, Long> {
-    List<ApoderadoAlumno> findByApoderadoId(Long apoderadoId);
+public interface ApoderadoAlumnoRepository
+        extends JpaRepository<ApoderadoAlumno, Long> {
+
+    List<ApoderadoAlumno> findByApoderadoId(
+            Long apoderadoId
+    );
+
+    boolean existsByApoderadoIdAndAlumnoId(
+            Long apoderadoId,
+            Long alumnoId
+    );
 }
